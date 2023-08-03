@@ -31,7 +31,7 @@ app.get("/auth", async (req, res) => {
         return res.send({ error_code: res.status, error_message: json })
     } else {
         fs.writeFileSync('./config.json', JSON.stringify({ token: json }));
-        return res.sendFile(__dirname + "/logged-in.html");
+        return res.sendFile(__dirname + "/utils/logged-in.html");
     }
 });
 
