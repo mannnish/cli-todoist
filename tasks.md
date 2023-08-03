@@ -1,0 +1,17 @@
+### steps
+- gitignore
+    - [x] node_modules/
+    - [x] config.json & code.json
+    - [x] .env & .npm
+- authorization
+    - [x] create an app on todoist to get client_id, client_secret
+    - [x] set a redirect url for the app e.g. localhost:31234/auth (auth is a route i created and choose a random port)
+    - [x] we are also running a server on this fixed-random-port, where we will get back the login data
+    - [x] create an auth endpoint
+    - [x] make a http request for authorization with client_id, permission and random-key
+    - [x] this request is to opened in a browser after clicking
+    - [x] it redirects with code as a query param, so I redirected to localhost at the port which I was running the server
+    - [ ] now with this code, try to get token for the user and then save that token locally
+- application that uses token
+    - [x] setup a middleware that checks if token is present or not
+    - [ ] print daily tasks of the user
