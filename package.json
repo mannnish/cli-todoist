@@ -1,6 +1,6 @@
 {
-  "name": "todoist-cli",
-  "version": "1.0.0",
+  "name": "cli-todoist",
+  "version": "1.1.0",
   "description": "cli application for todoist",
   "main": "index.js",
   "scripts": {
@@ -8,22 +8,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/mannnish/todoist-cli.git"
+    "url": "git+https://github.com/mannnish/cli-todoist.git"
   },
   "keywords": [
-    "todoist"
+    "todoist",
+    "cli-todoist"
   ],
   "author": "mannnish_",
   "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/mannnish/todoist-cli/issues"
-  },
-  "homepage": "https://github.com/mannnish/todoist-cli#readme",
   "dependencies": {
-    "body-parser": "^1.20.2",
     "chalk": "^4.1.2",
-    "cheerio": "^1.0.0-rc.12",
-    "child_process": "^1.0.2",
     "cli-alerts": "^1.2.2",
     "cli-handle-error": "^4.4.0",
     "cli-handle-unhandled": "^1.1.1",
@@ -35,7 +29,7 @@
     "meow": "^9.0.0",
     "node-fetch": "^2.6.7"
   },
-  "devDependencies": {
-    "nodemon": "^3.0.1"
+  "bin": {
+    "cli-todoist": "index.js"
   }
 }

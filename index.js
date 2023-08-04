@@ -1,3 +1,4 @@
+#!/usr/bin/env node
 const express = require("express");
 const app = express();
 const inquirer = require("inquirer");
@@ -9,10 +10,10 @@ const init = require("./utils/init");
 const { get } = require("http");
 const input = cli.input;
 require("dotenv").config();
+const pkg = require("./package.json");
 const base = "https://api.todoist.com/rest/v2";
 
 const printNote = (msg) => { console.log(chalk.bgCyan(msg)) }
-const printHeader = (msg) => { console.log(chalk.bgYellow(msg)) }
 const printError = (msg) => { console.log(chalk.bgRed(msg)) }
 const printSuccess = (msg) => { console.log(chalk.bgGreen(msg)) }
 
@@ -31,7 +32,7 @@ const loginTempFn = async () => {
     const headers = { 'Authorization': `Bearer ${token}` };
     const response = await fetch(`${base}/labels`, { headers });
     if (response.status == 200) {
-        fs.writeFileSync('./config.json', JSON.stringify({ token: input.token }));
+        fs.writeFileSync(__dirname + '/config.json', JSON.stringify({ token: input.token }));
         printSuccess("Successfully logged in...")
     }
     else {
@@ -50,7 +51,7 @@ app.get("/auth", async (req, res) => {
     if (!req.query.code) {
         return printError("No code found")
     }
-    fs.writeFileSync('./code.json', JSON.stringify({ code: req.query.code, state: req.query.state }));
+    // fs.writeFileSync('./code.json', JSON.stringify({ code: req.query.code, state: req.query.state }));
     const datastring = `client_id=${process.env.CLIENT_ID}&client_secret=${process.env.CLIENT_SECRET}&code=${req.query.code}&grant_type=authorization_code`
     const response = await fetch("https://todoist.com/oauth/access_token", {
         method: "POST",
@@ -61,18 +62,19 @@ app.get("/auth", async (req, res) => {
     if (res.status !== 200) {
         return res.send({ error_code: res.status, error_message: json })
     } else {
-        fs.writeFileSync('./config.json', JSON.stringify({ token: json }));
+        fs.writeFileSync(__dirname + '/config.json', JSON.stringify({ token: json }));
         return res.sendFile(__dirname + "/utils/logged-in.html");
     }
 });
 
 
 const middleware = () => {
-    const existingConfig = fs.existsSync('./config.json');
+    // const existingConfig = fs.existsSync('./config.json');
+    const existingConfig = fs.existsSync(__dirname + '/config.json');
     if (!existingConfig) {
         return null;
     } else {
-        const config = require('./config.json');
+        const config = require(__dirname + '/config.json');
         if (!config.token) return null;
         return config.token;
     }
@@ -81,7 +83,14 @@ const middleware = () => {
 
 app.listen(31234, () => {
     (async () => {
-        if (input.includes("login")) {
+        if (input.includes("v")) {
+            printNote(pkg.version);
+            process.exit(0);
+        } else if (input.includes("c")) {
+            const token = middleware()
+            printSuccess("token: " + token)
+            process.exit(0);
+        } else if (input.includes("login")) {
             if (middleware() == null) {
                 // loginFn()
                 await loginTempFn()
@@ -94,7 +103,7 @@ app.listen(31234, () => {
         }
         else if (input.includes("logout")) {
             try {
-                fs.unlinkSync('./config.json');
+                fs.unlinkSync(__dirname + '/config.json');
                 printSuccess("Successfully logged out...")
             } catch (err) { }
             process.exit(0)

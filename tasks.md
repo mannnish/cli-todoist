@@ -1,4 +1,4 @@
-### steps
+### tasks
 - gitignore
     - [x] node_modules/
     - [x] config.json & code.json
@@ -14,4 +14,19 @@
     - [ ] now with this code, try to get token for the user and then save that token locally
 - application that uses token
     - [x] setup a middleware that checks if token is present or not
-    - [ ] print daily tasks of the user
+    - [x] all tasks and today tasks
+    - [x] options module
+- publishing to npm
+    - [x] add this as first line in your index.js
+    - [x] populate package.json with
+        - unique name
+        - version
+        - repository details
+        - keywords (optional)
+        - author
+        - bin with command name and entry point
+    - [x] `npm login`
+    - [x] `npm publish`
+    - notes
+        - create .env because it will pushed to npm hidden
+        - replaced file access with dirname + /filename

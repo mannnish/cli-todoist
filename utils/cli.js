@@ -2,12 +2,6 @@ const meow = require("meow");
 const meowHelp = require("cli-meow-help");
 
 const flags = {
-  clear: {
-    type: `boolean`,
-    default: true,
-    alias: `c`,
-    desc: `Clear the console`,
-  },
   noClear: {
     type: `boolean`,
     default: false,
