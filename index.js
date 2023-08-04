@@ -2,16 +2,17 @@ const express = require("express");
 const app = express();
 const inquirer = require("inquirer");
 const fetch = require("node-fetch");
-const { exec } = require("child_process");
 const fs = require('fs');
 const cli = require("./utils/cli");
 const chalk = require("chalk");
 const init = require("./utils/init");
+const { get } = require("http");
 const input = cli.input;
 require("dotenv").config();
 const base = "https://api.todoist.com/rest/v2";
 
 const printNote = (msg) => { console.log(chalk.bgCyan(msg)) }
+const printHeader = (msg) => { console.log(chalk.bgYellow(msg)) }
 const printError = (msg) => { console.log(chalk.bgRed(msg)) }
 const printSuccess = (msg) => { console.log(chalk.bgGreen(msg)) }
 
@@ -79,11 +80,7 @@ const middleware = () => {
 
 
 app.listen(31234, () => {
-    console.log("listening on port 31234");
-
     (async () => {
-        console.log("starting shell...");
-
         if (input.includes("login")) {
             if (middleware() == null) {
                 // loginFn()
@@ -108,8 +105,8 @@ app.listen(31234, () => {
                 printError("Please login first")
                 process.exit(0)
             } else {
-                init({ clear: true });
-                console.log("all your tasks for token " + token)
+                await getTodayTasks(token)
+                await showOptions(token)
             }
         }
 
@@ -117,3 +114,145 @@ app.listen(31234, () => {
         // process.exit(0);
     })();
 });
+
+class Task {
+    constructor(id, content, labels) {
+        this.id = id;
+        this.content = content;
+        this.labels = labels;
+    }
+}
+
+const getAllTasks = async (token) => await getTask(token, "ALL TASKS", "")
+const getTodayTasks = async (token) => await getTask(token, "FOR TODAY", "filter=(today|overdue)")
+
+const getTask = async (token, title, filter) => {
+    const headers = { 'Authorization': `Bearer ${token}` };
+    const response = await fetch(`${base}/tasks?${filter}`, { headers });
+    const json = await response.json();
+    var tasks = []
+    init({ title: title, clear: true });
+    for (var i = 0; i < json.length; i++) {
+        task_element = json[i]
+        var task = new Task(task_element.id, task_element.content, task_element.labels)
+        tasks.push(task)
+        if (task_element.labels.length == 0)
+            console.log(`${i + 1}. ${task.content}`)
+        else
+            console.log(`${i + 1}. ${task.content} (label: ${task.labels})`)
+    }
+
+    console.log(`\n`)
+    printNote("Options:")
+    console.log("add/ complete/ delete: for tasks")
+    console.log("all/ for-today: for viewing tasks")
+    console.log("exit: to exit")
+    console.log(`\n`)
+    const input = await inquirer.prompt([
+        {
+            type: "input",
+            name: "command",
+            message: "Enter your command",
+        },
+    ]);
+    switch (input.command) {
+        case "add":
+            {
+                const input = await inquirer.prompt([
+                    {
+                        type: "input",
+                        name: "task",
+                        message: "Enter task: ",
+                    },
+                    {
+                        type: "input",
+                        name: "due_string",
+                        message: "Enter human readable due (e.g. today, after 5 days, tomorrow at 12:00, etc.): ",
+                    }
+                ]);
+                const response = await fetch(`${base}/tasks`, {
+                    method: "POST",
+                    headers: { 'Authorization': `Bearer ${token}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ content: input.task, due_string: input.due_string })
+                });
+                if (response.status == 200) {
+                    printSuccess("Successfully added task")
+                }
+                else {
+                    printError("Error in adding task")
+                }
+                if (title == "FOR TODAY")
+                    await getTodayTasks(token)
+                else
+                    await getAllTasks(token)
+            }
+            break;
+        case "complete":
+            {
+                const input = await inquirer.prompt([
+                    {
+                        type: "input",
+                        name: "task_number",
+                        message: "Enter task number",
+                    },
+                ]);
+                const task_number = input.task_number
+                const task_id = tasks[task_number - 1].id
+                const response = await fetch(`${base}/tasks/${task_id}/close`, {
+                    method: "POST",
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.status == 204) {
+                    printSuccess("Successfully completed task")
+                }
+                else {
+                    printError("Error in completing task")
+                }
+                if (title == "FOR TODAY")
+                    await getTodayTasks(token)
+                else
+                    await getAllTasks(token)
+            }
+            break;
+        case "delete":
+            {
+                const input = await inquirer.prompt([
+                    {
+                        type: "input",
+                        name: "task_number",
+                        message: "Enter task number",
+                    },
+                ]);
+                const task_number = input.task_number
+                const task_id = tasks[task_number - 1].id
+                const response = await fetch(`${base}/tasks/${task_id}`, {
+                    method: "DELETE",
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.status == 204) {
+                    printSuccess("Successfully deleted task")
+                } else {
+                    printError("Error in deleting task")
+                }
+                if (title == "FOR TODAY")
+                    await getTodayTasks(token)
+                else
+                    await getAllTasks(token)
+            }
+            break;
+        case "all":
+            await getAllTasks(token)
+            break;
+        case "for-today":
+            await getTodayTasks(token)
+            break;
+        case "exit":
+            process.exit(0);
+            break;
+        default:
+            printError("Invalid command")
+            process.exit(0);
+            break;
+    }
+
+}
