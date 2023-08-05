@@ -37,7 +37,7 @@ cli-todoist logout
 ---
 
 
-### 💻 Technologies used in the project:
+### 💻 Technologies Used
 - runtime/ framwork: node.js, npm
 - dependencies: node-fetch, inquirer, etc.
 - third-party: todoist api
