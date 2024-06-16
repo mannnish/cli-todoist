@@ -1,6 +1,6 @@
 <h1 align="center" id="title">cli-todoist</h1>
 
-- A simple command line interface for Todoist, a todo based application. You can simply add, remove, list and complete tasks from your terminal.
+- A very easy to use command line interface for developers and shell users based on Todoist, a todo based application. You can simply add, remove, list and complete tasks from your terminal.
 - package link: https://www.npmjs.com/package/cli-todoist
 
 ---
